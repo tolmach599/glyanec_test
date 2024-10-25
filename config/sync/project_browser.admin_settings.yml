@@ -1,0 +1,9 @@
+_core:
+  default_config_hash: aJGC4PwGN6XFOxx0VsaD0jrOhPqFa3xJDO8g9CwY2IE
+enabled_sources:
+  - drupalorg_jsonapi
+  - recipes
+  - random_data
+  - drupal_core
+allow_ui_install: false
+allowed_projects: {  }
