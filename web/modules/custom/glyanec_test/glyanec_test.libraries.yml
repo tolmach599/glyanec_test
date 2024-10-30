@@ -1,0 +1,14 @@
+datetime_display:
+  version: 1.x
+  js:
+    js/glyanec_test_date.js: {}
+  dependencies:
+    - core/drupal
+
+exposed_filter_autosubmit:
+  version: 1.x
+  js:
+    js/exposed_filter_autosubmit.js: {}
+  dependencies:
+    - core/jquery
+    - core/drupal

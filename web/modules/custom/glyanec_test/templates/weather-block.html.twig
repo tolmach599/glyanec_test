@@ -1,0 +1,10 @@
+<div class="weather-block">
+  {% if weather.weather %}
+    <h3>{{ 'Current Weather'|t }}</h3>
+    <p>{{ weather.name }}</p>
+    <p>{{ 'Temperature:'|t }} {{ weather.main.temp }} °C</p>
+    <p>{{ 'Weather:'|t }} {{ weather.weather[0].description }}</p>
+  {% else %}
+    <p>{{ 'No weather data available.'|t }}</p>
+  {% endif %}
+</div>

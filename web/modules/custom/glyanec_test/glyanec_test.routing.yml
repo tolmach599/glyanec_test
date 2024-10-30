@@ -1,0 +1,23 @@
+glyanec_test.form:
+  path: '/glyanec-test-form'
+  defaults:
+    _title: 'Glyanec test - Form example & ajax.'
+    _form: '\Drupal\glyanec_test\Form\GlyanecTestForm'
+  requirements:
+    _permission: 'access content'
+
+glyanec_test.batch_resave_nodes_form:
+  path: '/admin/content/batch-resave-nodes'
+  defaults:
+    _title: 'Glyanec test - Batch resave nodes'
+    _form: '\Drupal\glyanec_test\Form\GlyanecTestBatchResaveNodesForm'
+  requirements:
+    _permission: 'administer nodes'
+
+glyanec_test.config_form:
+  path: '/admin/config/system/glyanec-test'
+  defaults:
+    _form: '\Drupal\glyanec_test\Form\GlyanecTestConfigForm'
+    _title: 'Glyanec Test Settings'
+  requirements:
+    _permission: 'administer site configuration'

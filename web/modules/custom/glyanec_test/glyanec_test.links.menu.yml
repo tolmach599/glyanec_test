@@ -1,0 +1,16 @@
+glyanec_test.themes_page_my:
+  route_name: node.add
+  route_parameters:
+    node_type: page
+  title: Add page
+  description: 'Create a new Page node.'
+  parent: 'system.admin'
+  weight: -55
+
+glyanec_test.config_form:
+  title: 'Glyanec test settings'
+  description: 'Configuration settings for the Glyanec Test module.'
+  route_name: glyanec_test.config_form
+  parent: system.admin_config
+  weight: 100
+

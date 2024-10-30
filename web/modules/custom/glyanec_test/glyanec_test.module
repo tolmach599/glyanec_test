@@ -1,0 +1,201 @@
+<?php
+/**
+ * @file
+ * Contains glyanec_test module.
+ */
+
+use Drupal\Core\Datetime\DrupalDateTime;
+use Drupal\node\Entity\Node;
+use Drupal\Core\Entity\EntityInterface;
+use Drupal\Core\Form\FormStateInterface;
+
+/**
+ * Implements hook_theme().
+ */
+function glyanec_test_theme() {
+  return [
+    'glyanec_site_name_block_template' => [
+      'variables' => [
+        'site_name' => NULL,
+      ],
+      'template' => 'glyanec-site-name-block-template',
+    ],
+    'weather_block' => [
+      'variables' => ['weather' => NULL],
+      'template' => 'weather-block',
+    ],
+  ];
+}
+
+/**
+ * Implements hook_preprocess_HOOK().
+ */
+function glyanec_test_preprocess_node__page(&$variables) {
+  $node = $variables['node'];
+  if ($node->getTitle() === 'Programmatically created node') {
+    // Turn off cache for authorized users and anonymous users
+    $variables['#cache']['max-age'] = 0;
+    \Drupal::service('page_cache_kill_switch')->trigger();
+
+    $date = new DrupalDateTime('now', new \DateTimeZone('UTC'));
+    $date_string = \Drupal::service('date.formatter')->format(
+      $date->getTimestamp(),
+      'date_time_glyanec'
+    );
+    // Add current date appearance
+    $variables['content']['body']['0']['#text'] =
+      $variables['content']['body']['0']['#text'] .
+      "<p> Current date: $date_string </p>";
+  }
+}
+
+/**
+ * Implements hook_preprocess_page().
+ */
+function glyanec_test_preprocess_page(array &$variables) {
+  $variables['#attached']['library'][] = 'glyanec_test/datetime_display';
+}
+
+/**
+ * Implements hook_ENTITY_TYPE_insert() for node entities.
+ */
+function glyanec_test_node_insert(EntityInterface $node) {
+  if ($node instanceof Node && $node->bundle() == 'article') {
+    $date = new DrupalDateTime('now', new \DateTimeZone('UTC'));
+    $date_string = \Drupal::service('date.formatter')->format(
+      $date->getTimestamp(),
+      'date_time_glyanec'
+    );
+
+    $node->setTitle($date_string . ' -- ' . $node->getTitle());
+    $node->save();
+  }
+}
+
+/**
+ * Calculate count of nodes for specified content type (entityQuery).
+ *
+ * @param string $content_type
+ *   Content type to calculate.
+ * @return int
+ *   Calculated number of nodes.
+ */
+function glyanec_test_get_published_node_count($content_type, $mode = 1) {
+  if ($mode = 1) {
+    // The first version (entityQuery)
+    $query = \Drupal::entityQuery('node')
+      ->condition('status', Node::PUBLISHED)
+      ->condition('type', $content_type)
+      ->accessCheck(FALSE);
+
+    $count = $query->count()->execute();
+  }
+  else if ($mode = 2) {
+    // The second version (\Drupal::database)
+    $database = \Drupal::database();
+    $query = $database->select('node_field_data', 'n')
+      ->condition('n.type', $content_type)
+      ->condition('n.status', 1)
+      ->countQuery();
+
+    $count = $query->execute()->fetchField();
+  }
+  else {
+    $count = 0;
+  }
+  return $count;
+}
+
+/**
+ * Implements hook_views_data().
+ */
+function glyanec_test_views_data() {
+  $data['glyanec_data_table']['table']['group'] = t('Custom Data');
+  $data['glyanec_data_table']['table']['base'] = [
+    'field' => 'id',
+    'title' => t('Glyanec Data Table'),
+    'help' => t('Custom data stored in glyanec_data_table.'),
+  ];
+
+  $data['glyanec_data_table']['id'] = [
+    'title' => t('ID'),
+    'help' => t('The ID of the entry.'),
+    'field' => [
+      'id' => 'numeric',
+    ],
+  ];
+
+  $data['glyanec_data_table']['title'] = [
+    'title' => t('Title'),
+    'help' => t('The title of the entry.'),
+    'field' => [
+      'id' => 'standard',
+    ],
+    'filter' => [
+      'id' => 'string',
+    ],
+  ];
+
+  $data['glyanec_data_table']['description'] = [
+    'title' => t('Description'),
+    'help' => t('The description of the entry.'),
+    'field' => [
+      'id' => 'standard',
+    ],
+    'filter' => [
+      'id' => 'string',
+    ],
+  ];
+
+  $data['glyanec_data_table']['created'] = [
+    'title' => t('Created'),
+    'help' => t('The creation timestamp of the entry.'),
+    'field' => [
+      'id' => 'date',
+    ],
+    'filter' => [
+      'id' => 'date',
+    ],
+  ];
+
+  $data['views']['node_title_created_field'] = [
+    'title' => t('Glyanec test title-cteated field'),
+    'help' => t('Glyanec test title-cteated field.'),
+    'field' => [
+      'id' => 'node_title_created_field',
+    ],
+  ];
+
+  return $data;
+}
+
+/**
+ * Adds article nodes to the queue for resaving.
+ */
+function glyanec_test_add_nodes_to_queue() {
+  $config = \Drupal::config('glyanec_test.settings');
+  $node_id = $config->get('node');
+  $enabled = $config->get('enabled');
+
+  if ($enabled == 0) {
+    return;
+  }
+  if ($node_id) {
+    $queue = \Drupal::service('queue')->get('article_resave_queue');
+    $queue->createItem(['nid' => $node_id]);
+  }
+  else {
+    \Drupal::logger('glyanec_test')->error('No node ID found in configuration.');
+  }
+}
+
+/**
+ * Implements hook_form_FORM_ID_alter().
+ */
+function glyanec_test_form_views_exposed_form_alter(&$form, FormStateInterface $form_state, $form_id) {
+  // Add custom JavaScript to auto-submit the form on change.
+  $form['#attached']['library'][] = 'glyanec_test/exposed_filter_autosubmit';
+  if (isset($form['actions']['submit'])) {
+    $form['actions']['submit']['#attributes']['class'][] = 'visually-hidden';
+  }
+}

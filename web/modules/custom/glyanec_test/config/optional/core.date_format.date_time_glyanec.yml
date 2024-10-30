@@ -1,0 +1,8 @@
+uuid: 971ef371-241e-4543-bcc3-640f123a9333
+langcode: en
+status: true
+dependencies: {  }
+id: date_time_glyanec
+label: 'Date-time for Glyanec'
+locked: false
+pattern: 'd.m.Y H:i:s'

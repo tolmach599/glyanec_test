@@ -1,0 +1,24 @@
+services:
+  glyanec_test.home_page_node_service:
+    class: Drupal\glyanec_test\Service\HomePageNodeService
+    arguments: ['@config.factory', '@path_alias.manager']
+
+  glyanec_test.home_page_access_subscriber:
+    class: Drupal\glyanec_test\EventSubscriber\HomePageAccessSubscriber
+    arguments: ['@current_user', '@current_route_match', '@glyanec_test.home_page_node_service']
+    tags:
+      - { name: event_subscriber }
+
+  glyanec_test.twig.site_info_extension:
+    class: Drupal\glyanec_test\Twig\SiteInfoExtension
+    arguments: ['@config.factory', '@date.formatter']
+    tags:
+      - { name: twig.extension }
+
+  glyanec_test.entity_dump_service:
+    class: Drupal\glyanec_test\Service\EntityDumpService
+    arguments: ['@entity_type.manager']
+
+  glyanec_test.weather_service:
+    class: Drupal\glyanec_test\Service\WeatherService
+    arguments: ['@http_client', '@config.factory', '@logger.factory']

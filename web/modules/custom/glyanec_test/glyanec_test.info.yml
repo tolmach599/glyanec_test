@@ -1,0 +1,5 @@
+name: Glyanec test
+type: module
+description: "Test task to apply Glyanec company job position"
+package: Custom test task
+core_version_requirement: ^10 || ^11

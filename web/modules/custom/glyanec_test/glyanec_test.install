@@ -1,0 +1,107 @@
+<?php
+
+/**
+ * @file
+ * Install and update functions for glyanec_test module.
+ */
+
+use Drupal\node\Entity\Node;
+use Drupal\Core\Datetime\DrupalDateTime;
+
+/**
+ * Implements hook_schema().
+ */
+function glyanec_test_schema() {
+  $schema['glyanec_test'] = [
+    'description' => 'Table to store some data for glyanec_test project.',
+    'fields' => [
+      'id' => [
+        'description' => 'Primary key.',
+        'type' => 'serial',
+        'not null' => TRUE,
+      ],
+      'nid' => [
+        'description' => 'Node ID.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'unsigned' => TRUE,
+        'default' => 0,
+      ],
+      'data' => [
+        'description' => 'Some extra data.',
+        'type' => 'blob',
+        'not null' => FALSE,
+      ],
+      'status' => [
+        'description' => 'The record status.',
+        'type' => 'int',
+        'size' => 'tiny',
+        'not null' => TRUE,
+        'default' => 0,
+      ],
+    ],
+    'primary key' => ['id'],
+    'indexes' => [
+      'nid' => ['nid'],
+      'status' => ['status'],
+    ],
+  ];
+
+  $schema['glyanec_data_table'] = [
+    'description' => 'Table to store glyanec data for Views.',
+    'fields' => [
+      'id' => [
+        'type' => 'serial',
+        'not null' => TRUE,
+      ],
+      'title' => [
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+      ],
+      'description' => [
+        'type' => 'text',
+        'not null' => FALSE,
+      ],
+      'created' => [
+        'type' => 'int',
+        'not null' => TRUE,
+        'description' => 'Creation timestamp.',
+      ],
+    ],
+    'primary key' => ['id'],
+  ];
+
+  return $schema;
+}
+
+/**
+ * Create page node programmatically.
+ */
+function glyanec_test_update_11003(&$sandbox) {
+  $date = new DrupalDateTime('now', new \DateTimeZone('UTC'));
+  $date_string = \Drupal::service('date.formatter')->format(
+    $date->getTimestamp(),
+    'date_time_glyanec'
+  );
+
+  // Create node. Basic page content type is in default Drupal set.
+  $node = Node::create([
+    'type'        => 'page',
+    'title'       => 'Programmatically created node',
+    'body' => [
+      'summary' => '',
+      'value' => "<p> Node created: $date_string </p>",
+      'format' => 'full_html',
+    ],
+  ]);
+  $node->save();
+  $path_alias = \Drupal::entityTypeManager()->getStorage('path_alias')->create([
+    'path' => '/node/' . $node->id(),
+    'alias' => '/my-first-page',
+    'langcode' => 'en',
+  ]);
+  $path_alias->save();
+
+  drupal_flush_all_caches();
+}
